@@ -1,6 +1,8 @@
 # Created by Jen Bradham on January 12, 2017
 # Script to plot and statistically evaluate extinct peccary microwear and isotopes and compare them with modern peccary microwear and isotops
 
+## This script was updated to Github August 24, 2017 and is the script I used to write the manuscript prior to sending it to colleagues for review (round 1) on June 5, 2017. Then Larisa asked to edit the figures. So the second upload to Github is with the figures edited to reflect the changes Larisa wanted (before she even read the paper).
+
 rm(list=ls())
 
 library(tidyverse)
@@ -79,9 +81,10 @@ isotopes <- isotopes[! (isotopes$Genus == "Collared"),] #remove collared peccari
 ##### ~%~%~%~ ##### ~%~%~%~ ##### ~%~%~%~ ##### ~%~%~%~ ##### ~%~%~%~ ##### ~%~%~%~
 
 #### BOXPLOT OF DELTA13C PER NALMA FOR ALL SPECIES 
+jpeg('Figure_Isotopes.jpg')
 
 isotopes$NALMA <- factor(isotopes$NALMA,
-                                 levels = c('Hemphillian', 'Blancan', 'Irvingtonian',                                   'Rancholabrean', 'Modern'), ordered = TRUE)
+                         levels = c('Hemphillian', 'Blancan', 'Irvingtonian', 'Rancholabrean', 'Modern'), ordered = TRUE)
 species_carbon <- ggplot(isotopes, aes(x=NALMA, y=Delta13C_Seuss)) + geom_boxplot(aes(fill=Genus)) + coord_flip()
 species_carbon +  ylab(delta^13~C) + theme_classic() + scale_y_continuous(limits=c(-16, 0)) +
   scale_fill_manual(values = c("#FFFFFF", "#666666", "#000000", "#CCCCCC"),
@@ -89,7 +92,7 @@ species_carbon +  ylab(delta^13~C) + theme_classic() + scale_y_continuous(limits
   theme(plot.background = element_blank(), #remove the gray background and grid
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
-        axis.ticks.x=element_blank(), #remove tick marks on axes
+        #axis.ticks.x=element_blank(), #remove tick marks on x axis
         axis.ticks.y=element_blank(), 
         axis.title.y=element_blank()) +
   theme(panel.border= element_blank()) +
@@ -101,11 +104,9 @@ species_carbon +  ylab(delta^13~C) + theme_classic() + scale_y_continuous(limits
          legend.title = element_text(size = 15), 
          legend.text = element_text(size = 14), 
          legend.key.size = unit(1.5, 'lines')) 
-
+dev.off()
 
 #Colors: FFFFFF=white , 666666=darker gray, 000000"=black, CCCCCC = light gray
-
-
 
 
 
@@ -334,27 +335,37 @@ write.csv(Iso_WLP.extinct, 'Isotopes_WLP-Extinct.csv')
 
 microwear <- microwear[! (microwear$Genus == "Collared"),] #remove collared peccaries
 
-###############
 
+############### ** BE SURE TO REMOVE THIS LEVEL REWRITE BEFORE DOING ANALYSES. THIS LEVEL CHANGE IS FOR THE GRAPHING PORTION ONLY BECAUSE IT'S THE ONLY WAY I COULD GET THE PROPER LEGEND. I COULDN'T OVERWRITE THE LEGEND TEXT IN GGPLOT2 (despite hours of work)
 
-micro_scatter <- ggplot(data=microwear, aes(x=Asfc, y=epLsar))
-micro_scatter + geom_point(aes(shape = Genus, color = Genus), size = 4) +  #4 is size of points
+# levels(microwear$Genus) ##This gives you the categories under 'genus'
+levels(microwear$Genus) <- c(levels(microwear$Genus), "Catagonus sp.", "Mylohyus sp.", "Platygonus sp.", "Tayassu pecari") #Add new levels (aka categories) for the Genus column
+#Rename the original levels with the name of the new levels that you want
+microwear$Genus[microwear$Genus == 'Catagonus'] <- 'Catagonus sp.'
+microwear$Genus[microwear$Genus == 'Mylohyus'] <- 'Mylohyus sp.'
+microwear$Genus[microwear$Genus == 'Platygonus'] <- 'Platygonus sp.'
+microwear$Genus[microwear$Genus == 'T. pecari'] <- 'Tayassu pecari'
+
+micro_scatter <- ggplot(data=microwear, aes(x=Asfc, y=epLsar)) + geom_point(aes(shape = Genus, color = Genus), size = 4) +  #4 is size of points
   theme_classic() +
-  scale_color_manual(values = c("#CCCCCC", "#666666", "#000000", "#999999")) + 
+  scale_color_manual(values = c("#CCCCCC", "#666666", "#000000", "#999999")) +
   theme(plot.background = element_blank(), #remove the gray background and grid
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
-        axis.ticks.x=element_blank(), #remove tick marks on axes
+        #axis.ticks.x=element_blank(), #remove tick marks on x axis
         axis.ticks.y=element_blank()) +
   theme(panel.border= element_blank()) +
   theme(axis.line.x = element_line(color="black", size = 1), #drawing the x and y axis lines
         axis.line.y = element_line(color="black", size = 1)) +
   theme(legend.text = element_text(face="italic")) + #Italisize legend words
+  theme(axis.title.y=element_text(face="italic")) + #italisize y axis label
+  theme(axis.title.x=element_text(face="italic")) +
   theme (axis.text = element_text(size = 15), 
          axis.title = element_text(size = 17, face = "bold"), 
          legend.title = element_text(size = 15), 
          legend.text = element_text(size = 14), 
-         legend.key.size = unit(1.5, 'lines')) 
+         legend.key.size = unit(1.5, 'lines')) + 
+  scale_y_continuous(limits=c(0.000, 0.008)) #change the y axis to 
 
 
 #Colors: FFFFFF=white , 666666=darker gray, 000000"=black, CCCCCC = light gray
